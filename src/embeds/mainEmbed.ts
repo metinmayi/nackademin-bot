@@ -1,8 +1,8 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { HelpQueue } from "./HelpQueue.js";
+import { QueueManager } from "../core/QueueManager.js";
 
-export function getMainEmbed(helpQueue: HelpQueue) {
-  const students = helpQueue.queue;
+export function getMainEmbed(QueueManager: QueueManager) {
+  const students = QueueManager.queue.queue;
   const studentFields = students.map((student) => {
     return {
       name: " ",

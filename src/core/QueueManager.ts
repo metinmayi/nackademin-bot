@@ -5,18 +5,16 @@ import {
   TextChannel,
   User,
 } from "discord.js";
-import { getMainEmbed } from "./mainEmbed.js";
+import { getMainEmbed } from "../embeds/mainEmbed.js";
+import { Queue } from "./Queue.js";
 
-export class HelpQueue {
+export class QueueManager {
   client: Client;
   channel!: TextChannel;
   channelName = "kö";
   message!: Message;
   allowedReactions = ["🎟️", "⏭️"];
-  queue: User[] = [];
-  queueLength = 0;
-  currentStudentName = " ";
-  nextStudentName = " ";
+  queue: Queue = new Queue();
   teacherName = "Maestro";
 
   constructor(client: Client) {
@@ -85,35 +83,13 @@ export class HelpQueue {
   }
 
   drawTicket(user: User) {
-    if (this.queue.some((queuedUser) => queuedUser.id === user.id)) {
-      this.removeUserFromQueue(user);
+    if (this.queue.queue.some((queuedUser) => queuedUser.id === user.id)) {
+      this.queue.removeUser(user);
     } else {
-      this.addUserToQueue(user);
+      this.queue.addUser(user);
     }
 
     this.updateEmbed();
-  }
-
-  removeUserFromQueue(user: User) {
-    const indexOfUser = this.queue.findIndex(
-      (queuedUser) => queuedUser.id === user.id
-    );
-    const clonedQueue = [...this.queue];
-    clonedQueue.splice(indexOfUser, 1);
-
-    this.queue = clonedQueue;
-    this.queueLength = this.queue.length;
-  }
-
-  addUserToQueue(user: User) {
-    this.queue.push(user);
-    this.queueLength = this.queue.length;
-
-    user
-      .send(
-        `Du har nu ställt dig i kö. Din plats i kön är: ${this.queueLength}. \nDu kommer att få ett meddelande när du är näst på tur.`
-      )
-      .catch((error) => console.log({ drawTicketSendError: error }));
   }
 
   nextStudent(user: User) {
@@ -121,11 +97,7 @@ export class HelpQueue {
       return;
     }
 
-    this.queue.shift();
-
-    if (!this.queue.length) {
-      this.resetEmbed();
-    }
+    this.queue.next();
 
     if (this.queue.length > 0) {
       this.notifyNextStudent();
@@ -139,19 +111,15 @@ export class HelpQueue {
   }
 
   notifyNextStudent() {
-    this.queue[0]
+    this.queue.queue[0]
       .send("Det är nu din tur, hoppa i röstkanalen så hjälper jag dig.")
       .catch((error) => console.log({ notifyAndUpdateCurrentStudent: error }));
   }
 
   notifyUpcomingStudent() {
-    this.queue[1]
+    this.queue.queue[1]
       .send("Du är näst på tur. Se till att vara redo med nödvändigt material.")
       .catch((error) => console.log({ notifyAndUpdateUpcomingStudent: error }));
-  }
-
-  resetEmbed() {
-    this.queueLength = 0;
   }
 
   updateEmbed() {

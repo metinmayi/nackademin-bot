@@ -1,6 +1,6 @@
 import { EmbedBuilder } from "@discordjs/builders";
 export function getMainEmbed(QueueManager) {
-    const students = QueueManager.queue;
+    const students = QueueManager.queue.queue;
     const studentFields = students.map((student) => {
         return {
             name: " ",

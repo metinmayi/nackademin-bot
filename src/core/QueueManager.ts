@@ -5,17 +5,17 @@ import {
   TextChannel,
   User,
 } from "discord.js";
-import { getMainEmbed } from "../embeds/mainEmbed.js";
+import { Embed } from "./Embed.js";
 import { Queue } from "./Queue.js";
 
 export class QueueManager {
   client: Client;
-  channel!: TextChannel;
+  embedChannel!: TextChannel;
   channelName = "kö";
-  message!: Message;
-  allowedReactions = ["🎟️", "⏭️"];
   queue: Queue = new Queue();
-  teacherName = "Maestro";
+  embed!: Embed;
+  #teacherName = "Maestro";
+  isActiveSession = false;
 
   constructor(client: Client) {
     this.client = client;
@@ -24,9 +24,9 @@ export class QueueManager {
   async initiate() {
     try {
       this.setChannel();
-      await this.clearChannel();
-      await this.displayEmbedAndSetMessage();
-      this.addReactionListeners();
+      this.embed = new Embed(this);
+      await this.embed.displayEmbed();
+      await this.#addReactionListeners();
     } catch (error) {
       console.log({ initiate: error });
     }
@@ -36,67 +36,49 @@ export class QueueManager {
     const channel = this.client.channels.cache.find(
       (channel) => (channel as TextChannel).name === this.channelName
     );
-    this.channel = channel as TextChannel;
+    this.embedChannel = channel as TextChannel;
   }
 
-  async clearChannel() {
-    try {
-      const messages = await this.channel.messages.fetch();
-      for (const [key, message] of messages) {
-        if (message.deletable) {
-          await message.delete();
-        }
-      }
-    } catch (error) {
-      console.log({ clearChannel: error });
-    }
-  }
-
-  async displayEmbedAndSetMessage() {
-    const mainEmbed = getMainEmbed(this);
-    const embedMessage = await this.channel.send({
-      embeds: [mainEmbed],
-    });
-    embedMessage.react("🎟️");
-    embedMessage.react("⏭️");
-
-    this.message = embedMessage;
-  }
-
-  addReactionListeners() {
+  async #addReactionListeners() {
+    const message = this.embed.getEmbedMessage();
     const filter = (_reaction: MessageReaction, user: User) => !user.bot;
 
-    const reactionCollector = this.message.createReactionCollector({ filter });
+    const reactionCollector = message.createReactionCollector({
+      filter,
+    });
     reactionCollector.options.dispose = true;
 
-    reactionCollector.on("collect", (reaction, user) => {
+    reactionCollector.on("collect", async (reaction, user) => {
       reaction.users.remove(user);
       if (reaction.emoji.name === "🎟️") {
         this.drawTicket(user);
-        return;
       }
 
-      if (reaction.emoji.name === "⏭️") {
-        this.nextStudent(user);
+      if (reaction.emoji.name === "⏭️" && user.username === this.#teacherName) {
+        this.nextStudent();
+      }
+
+      if (reaction.emoji.name === "▶️" && user.username === this.#teacherName) {
+        this.embed.toggleActiveSession();
+        await this.embed.displayEmbed();
+        await this.#addReactionListeners();
+        return;
       }
     });
   }
 
-  drawTicket(user: User) {
-    if (this.queue.queue.some((queuedUser) => queuedUser.id === user.id)) {
-      this.queue.removeUser(user);
-    } else {
-      this.queue.addUser(user);
-    }
-
-    this.updateEmbed();
-  }
-
-  nextStudent(user: User) {
-    if (user.username !== this.teacherName) {
+  async drawTicket(user: User) {
+    const isUserInQueue = this.queue.isUserInQueue(user);
+    if (isUserInQueue) {
+      this.nextStudent();
       return;
     }
 
+    this.queue.addUser(user);
+    await this.embed.updateActiveEmbed();
+  }
+
+  nextStudent() {
     this.queue.next();
 
     if (this.queue.length > 0) {
@@ -107,7 +89,7 @@ export class QueueManager {
       this.notifyUpcomingStudent();
     }
 
-    this.updateEmbed();
+    this.embed.updateActiveEmbed();
   }
 
   notifyNextStudent() {
@@ -120,11 +102,5 @@ export class QueueManager {
     this.queue.queue[1]
       .send("Du är näst på tur. Se till att vara redo med nödvändigt material.")
       .catch((error) => console.log({ notifyAndUpdateUpcomingStudent: error }));
-  }
-
-  updateEmbed() {
-    this.message
-      .edit({ embeds: [getMainEmbed(this)] })
-      .catch((error) => console.log({ updateEmbed: error }));
   }
 }

@@ -1,7 +1,7 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { QueueManager } from "../core/QueueManager.js";
 
-export function getMainEmbed(QueueManager: QueueManager) {
+export function getActiveEmbed(QueueManager: QueueManager) {
   const students = QueueManager.queue.queue;
   const studentFields = students.map((student) => {
     return {

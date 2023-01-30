@@ -6,6 +6,10 @@ export class Queue {
 
   constructor() {}
 
+  isUserInQueue(user: User) {
+    return this.queue.some(({ id }) => id === user.id);
+  }
+
   addUser(user: User) {
     this.queue.push(user);
     this.length = this.queue.length;
@@ -16,13 +20,8 @@ export class Queue {
       .catch((error) => console.log({ addUser: error }));
   }
 
-  removeUser(user: User) {
-    const indexOfUser = this.queue.findIndex(({ id }) => id === user.id);
-    this.queue.splice(indexOfUser, 1);
-    this.length = this.queue.length;
-  }
-
   next() {
     this.queue.shift();
+    this.length = this.queue.length;
   }
 }

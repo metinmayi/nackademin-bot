@@ -7,23 +7,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { getMainEmbed } from "../embeds/mainEmbed.js";
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _QueueManager_instances, _QueueManager_teacherName, _QueueManager_addReactionListeners;
+import { Embed } from "./Embed.js";
 import { Queue } from "./Queue.js";
 export class QueueManager {
     constructor(client) {
+        _QueueManager_instances.add(this);
         this.channelName = "kö";
-        this.allowedReactions = ["🎟️", "⏭️"];
         this.queue = new Queue();
-        this.teacherName = "Maestro";
+        _QueueManager_teacherName.set(this, "Maestro");
+        this.isActiveSession = false;
         this.client = client;
     }
     initiate() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 this.setChannel();
-                yield this.clearChannel();
-                yield this.displayEmbedAndSetMessage();
-                this.addReactionListeners();
+                this.embed = new Embed(this);
+                yield this.embed.displayEmbed();
+                yield __classPrivateFieldGet(this, _QueueManager_instances, "m", _QueueManager_addReactionListeners).call(this);
             }
             catch (error) {
                 console.log({ initiate: error });
@@ -32,62 +39,20 @@ export class QueueManager {
     }
     setChannel() {
         const channel = this.client.channels.cache.find((channel) => channel.name === this.channelName);
-        this.channel = channel;
-    }
-    clearChannel() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const messages = yield this.channel.messages.fetch();
-                for (const [key, message] of messages) {
-                    if (message.deletable) {
-                        yield message.delete();
-                    }
-                }
-            }
-            catch (error) {
-                console.log({ clearChannel: error });
-            }
-        });
-    }
-    displayEmbedAndSetMessage() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const mainEmbed = getMainEmbed(this);
-            const embedMessage = yield this.channel.send({
-                embeds: [mainEmbed],
-            });
-            embedMessage.react("🎟️");
-            embedMessage.react("⏭️");
-            this.message = embedMessage;
-        });
-    }
-    addReactionListeners() {
-        const filter = (_reaction, user) => !user.bot;
-        const reactionCollector = this.message.createReactionCollector({ filter });
-        reactionCollector.options.dispose = true;
-        reactionCollector.on("collect", (reaction, user) => {
-            reaction.users.remove(user);
-            if (reaction.emoji.name === "🎟️") {
-                this.drawTicket(user);
-                return;
-            }
-            if (reaction.emoji.name === "⏭️") {
-                this.nextStudent(user);
-            }
-        });
+        this.embedChannel = channel;
     }
     drawTicket(user) {
-        if (this.queue.queue.some((queuedUser) => queuedUser.id === user.id)) {
-            this.queue.removeUser(user);
-        }
-        else {
+        return __awaiter(this, void 0, void 0, function* () {
+            const isUserInQueue = this.queue.isUserInQueue(user);
+            if (isUserInQueue) {
+                this.nextStudent();
+                return;
+            }
             this.queue.addUser(user);
-        }
-        this.updateEmbed();
+            yield this.embed.updateActiveEmbed();
+        });
     }
-    nextStudent(user) {
-        if (user.username !== this.teacherName) {
-            return;
-        }
+    nextStudent() {
         this.queue.next();
         if (this.queue.length > 0) {
             this.notifyNextStudent();
@@ -95,7 +60,7 @@ export class QueueManager {
         if (this.queue.length > 1) {
             this.notifyUpcomingStudent();
         }
-        this.updateEmbed();
+        this.embed.updateActiveEmbed();
     }
     notifyNextStudent() {
         this.queue.queue[0]
@@ -107,9 +72,29 @@ export class QueueManager {
             .send("Du är näst på tur. Se till att vara redo med nödvändigt material.")
             .catch((error) => console.log({ notifyAndUpdateUpcomingStudent: error }));
     }
-    updateEmbed() {
-        this.message
-            .edit({ embeds: [getMainEmbed(this)] })
-            .catch((error) => console.log({ updateEmbed: error }));
-    }
 }
+_QueueManager_teacherName = new WeakMap(), _QueueManager_instances = new WeakSet(), _QueueManager_addReactionListeners = function _QueueManager_addReactionListeners() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const message = this.embed.getEmbedMessage();
+        const filter = (_reaction, user) => !user.bot;
+        const reactionCollector = message.createReactionCollector({
+            filter,
+        });
+        reactionCollector.options.dispose = true;
+        reactionCollector.on("collect", (reaction, user) => __awaiter(this, void 0, void 0, function* () {
+            reaction.users.remove(user);
+            if (reaction.emoji.name === "🎟️") {
+                this.drawTicket(user);
+            }
+            if (reaction.emoji.name === "⏭️" && user.username === __classPrivateFieldGet(this, _QueueManager_teacherName, "f")) {
+                this.nextStudent();
+            }
+            if (reaction.emoji.name === "▶️" && user.username === __classPrivateFieldGet(this, _QueueManager_teacherName, "f")) {
+                this.embed.toggleActiveSession();
+                yield this.embed.displayEmbed();
+                yield __classPrivateFieldGet(this, _QueueManager_instances, "m", _QueueManager_addReactionListeners).call(this);
+                return;
+            }
+        }));
+    });
+};

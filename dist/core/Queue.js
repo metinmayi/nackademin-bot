@@ -3,6 +3,9 @@ export class Queue {
         this.queue = [];
         this.length = 0;
     }
+    isUserInQueue(user) {
+        return this.queue.some(({ id }) => id === user.id);
+    }
     addUser(user) {
         this.queue.push(user);
         this.length = this.queue.length;
@@ -17,5 +20,6 @@ export class Queue {
     }
     next() {
         this.queue.shift();
+        this.length = this.queue.length;
     }
 }

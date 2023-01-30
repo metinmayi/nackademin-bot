@@ -3,6 +3,12 @@ import dotenv from "dotenv";
 import { HelpQueue } from "./HelpQueue.js";
 dotenv.config();
 const token = process.env.BOT_TOKEN || "";
+import express from "express";
+const server = express();
+
+server.listen(3079, () => {
+  console.log("listening");
+});
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions],

@@ -8,6 +8,9 @@ const server = express();
 server.listen(3079, () => {
     console.log("listening");
 });
+server.get("/", (req, res) => {
+    res.sendStatus(200);
+});
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions],
     partials: [Partials.User, Partials.GuildMember, Partials.Reaction],

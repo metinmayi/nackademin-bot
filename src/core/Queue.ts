@@ -24,4 +24,9 @@ export class Queue {
     this.queue.shift();
     this.length = this.queue.length;
   }
+
+  reset() {
+    this.queue = [];
+    this.length = 0;
+  }
 }

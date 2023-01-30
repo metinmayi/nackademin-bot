@@ -91,6 +91,7 @@ _QueueManager_teacherName = new WeakMap(), _QueueManager_instances = new WeakSet
             }
             if (reaction.emoji.name === "▶️" && user.username === __classPrivateFieldGet(this, _QueueManager_teacherName, "f")) {
                 this.embed.toggleActiveSession();
+                this.queue.reset();
                 yield this.embed.displayEmbed();
                 yield __classPrivateFieldGet(this, _QueueManager_instances, "m", _QueueManager_addReactionListeners).call(this);
                 return;

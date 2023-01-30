@@ -62,6 +62,7 @@ _Embed_queueManager = new WeakMap(), _Embed_isActiveSession = new WeakMap(), _Em
             .then((message) => {
             message.react("🎟️");
             message.react("⏭️");
+            message.react("▶️");
             this.message = message;
         })
             .catch((error) => console.log({ displayActiveEmbed: error }));

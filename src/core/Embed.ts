@@ -31,6 +31,7 @@ export class Embed {
       .then((message) => {
         message.react("🎟️");
         message.react("⏭️");
+        message.react("▶️");
         this.message = message;
       })
       .catch((error) => console.log({ displayActiveEmbed: error }));

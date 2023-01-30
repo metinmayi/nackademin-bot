@@ -60,6 +60,7 @@ export class QueueManager {
 
       if (reaction.emoji.name === "▶️" && user.username === this.#teacherName) {
         this.embed.toggleActiveSession();
+        this.queue.reset();
         await this.embed.displayEmbed();
         await this.#addReactionListeners();
         return;

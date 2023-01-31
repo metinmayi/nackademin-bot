@@ -12,9 +12,10 @@ export class QueueManager {
   client: Client;
   embedChannel!: TextChannel;
   channelName = "kö";
+  #channelId = "1067500079394586734";
   queue: Queue = new Queue();
   embed!: Embed;
-  #teacherName = "Maestro";
+  #teacherId = "222013341294526467";
   isActiveSession = false;
 
   constructor(client: Client) {
@@ -34,7 +35,7 @@ export class QueueManager {
 
   setChannel() {
     const channel = this.client.channels.cache.find(
-      (channel) => (channel as TextChannel).name === this.channelName
+      (channel) => (channel as TextChannel).id === this.#channelId
     );
     this.embedChannel = channel as TextChannel;
   }
@@ -54,11 +55,11 @@ export class QueueManager {
         this.drawTicket(user);
       }
 
-      if (reaction.emoji.name === "⏭️" && user.username === this.#teacherName) {
+      if (reaction.emoji.name === "⏭️" && user.id === this.#teacherId) {
         this.nextStudent();
       }
 
-      if (reaction.emoji.name === "▶️" && user.username === this.#teacherName) {
+      if (reaction.emoji.name === "▶️" && user.id === this.#teacherId) {
         this.embed.toggleActiveSession();
         this.queue.reset();
         await this.embed.displayEmbed();

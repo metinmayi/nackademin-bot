@@ -12,15 +12,16 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _QueueManager_instances, _QueueManager_teacherName, _QueueManager_addReactionListeners;
+var _QueueManager_instances, _QueueManager_channelId, _QueueManager_teacherId, _QueueManager_addReactionListeners;
 import { Embed } from "./Embed.js";
 import { Queue } from "./Queue.js";
 export class QueueManager {
     constructor(client) {
         _QueueManager_instances.add(this);
         this.channelName = "kö";
+        _QueueManager_channelId.set(this, "1067500079394586734");
         this.queue = new Queue();
-        _QueueManager_teacherName.set(this, "Maestro");
+        _QueueManager_teacherId.set(this, "222013341294526467");
         this.isActiveSession = false;
         this.client = client;
     }
@@ -38,7 +39,7 @@ export class QueueManager {
         });
     }
     setChannel() {
-        const channel = this.client.channels.cache.find((channel) => channel.name === this.channelName);
+        const channel = this.client.channels.cache.find((channel) => channel.id === __classPrivateFieldGet(this, _QueueManager_channelId, "f"));
         this.embedChannel = channel;
     }
     drawTicket(user) {
@@ -73,7 +74,7 @@ export class QueueManager {
             .catch((error) => console.log({ notifyAndUpdateUpcomingStudent: error }));
     }
 }
-_QueueManager_teacherName = new WeakMap(), _QueueManager_instances = new WeakSet(), _QueueManager_addReactionListeners = function _QueueManager_addReactionListeners() {
+_QueueManager_channelId = new WeakMap(), _QueueManager_teacherId = new WeakMap(), _QueueManager_instances = new WeakSet(), _QueueManager_addReactionListeners = function _QueueManager_addReactionListeners() {
     return __awaiter(this, void 0, void 0, function* () {
         const message = this.embed.getEmbedMessage();
         const filter = (_reaction, user) => !user.bot;
@@ -86,10 +87,10 @@ _QueueManager_teacherName = new WeakMap(), _QueueManager_instances = new WeakSet
             if (reaction.emoji.name === "🎟️") {
                 this.drawTicket(user);
             }
-            if (reaction.emoji.name === "⏭️" && user.username === __classPrivateFieldGet(this, _QueueManager_teacherName, "f")) {
+            if (reaction.emoji.name === "⏭️" && user.id === __classPrivateFieldGet(this, _QueueManager_teacherId, "f")) {
                 this.nextStudent();
             }
-            if (reaction.emoji.name === "▶️" && user.username === __classPrivateFieldGet(this, _QueueManager_teacherName, "f")) {
+            if (reaction.emoji.name === "▶️" && user.id === __classPrivateFieldGet(this, _QueueManager_teacherId, "f")) {
                 this.embed.toggleActiveSession();
                 this.queue.reset();
                 yield this.embed.displayEmbed();

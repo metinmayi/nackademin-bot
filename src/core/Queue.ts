@@ -17,7 +17,9 @@ export class Queue {
       .send(
         `Du har lagts till i kön på plats: ${this.length}.\nDu kommer få ett meddelande när du är näst på tur.`
       )
-      .catch((error) => console.log({ addUser: error }));
+      .catch((error) =>
+        console.log({ timestamp: new Date().toLocaleString(), addUser: error })
+      );
   }
 
   next() {

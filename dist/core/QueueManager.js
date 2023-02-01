@@ -19,9 +19,9 @@ export class QueueManager {
     constructor(client) {
         _QueueManager_instances.add(this);
         this.channelName = "kö";
-        _QueueManager_channelId.set(this, "1067500079394586734");
+        _QueueManager_channelId.set(this, "1070320806787285012");
         this.queue = new Queue();
-        _QueueManager_teacherId.set(this, "222013341294526467");
+        _QueueManager_teacherId.set(this, "1067495037866352761");
         this.isActiveSession = false;
         this.client = client;
     }

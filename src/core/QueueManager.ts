@@ -12,10 +12,10 @@ export class QueueManager {
   client: Client;
   embedChannel!: TextChannel;
   channelName = "kö";
-  #channelId = "1067500079394586734";
+  #channelId = "1070320806787285012";
   queue: Queue = new Queue();
   embed!: Embed;
-  #teacherId = "222013341294526467";
+  #teacherId = "1067495037866352761";
   isActiveSession = false;
 
   constructor(client: Client) {

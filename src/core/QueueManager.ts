@@ -12,7 +12,7 @@ export class QueueManager {
   client: Client;
   embedChannel!: TextChannel;
   channelName = "kö";
-  #channelId = "1070320806787285012";
+  #channelId = "1087648531751383073";
   queue: Queue = new Queue();
   embed!: Embed;
   #teacherId = "1067495037866352761";
